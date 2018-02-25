@@ -51,12 +51,18 @@ class Interpreter:
         '''Not fully implemented, obviously'''
         if self.is_tree(right):
             if(self.is_tree(left)):
-                pass
+                items = list(left) + list(right)
+                tree = self.right
+                for item in reversed(items):
+                    tree = self.cons(item, tree)
+                return tree
             return SyntaxTree('(cons '+str(left)+' '+right.raw_expr+")",
-                              interpreter = self.interpreter,
+                              self,
                               left=left,
                               right=right)
         if self.is_tree(left):
-            pass
-        return SyntaxTree('(cons '+str(left)+' ' str(right)+")",
+            return SyntaxTree('(cons '+left.raw_expr + ' '+ str(right)+')',
+                              self,
+                              self.cons(left.right, right))
+        return SyntaxTree('(cons '+str(left)+' '+str(right)+")",
                           self.interpreter)
