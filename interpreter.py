@@ -25,7 +25,14 @@ class Interpreter:
     def evalbase(self, symbol, left, right):
         if symbol == 'eq?':
             return self.equals(left, right)
-        if symbol == ''
+        if symbol == 'quote':
+            return left
+        if symbol == 'car':
+            return left.left
+        if symbol == 'cdr':
+            return left.right
+        if symbol == 'cons':
+            return self.cons(left, right)
 
     def equals(self, left, right):
         if self.is_tree(left):
@@ -39,3 +46,17 @@ class Interpreter:
     def is_tree(self, item):
         'tests whether an item is a tree'
         return type(item) == type(self.fake_tree)
+
+    def cons(self, left, right):
+        '''Not fully implemented, obviously'''
+        if self.is_tree(right):
+            if(self.is_tree(left)):
+                pass
+            return SyntaxTree('(cons '+str(left)+' '+right.raw_expr+")",
+                              interpreter = self.interpreter,
+                              left=left,
+                              right=right)
+        if self.is_tree(left):
+            pass
+        return SyntaxTree('(cons '+str(left)+' ' str(right)+")",
+                          self.interpreter)
