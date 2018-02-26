@@ -1,4 +1,4 @@
-from tree import SyntaxTree
+from tree import SyntaxTree, split_expr
 
 class Interpreter:
     def __init__(self):
@@ -33,6 +33,10 @@ class Interpreter:
             return left.right
         if symbol == 'cons':
             return self.cons(left, right)
+        if symbol == 'atom?':
+            return len(split_expr(left)) == 1
+        if symbol == 'lambda':
+            return self.def_lambda(left, right)
 
     def equals(self, left, right):
         if self.is_tree(left):
@@ -48,7 +52,6 @@ class Interpreter:
         return type(item) == type(self.fake_tree)
 
     def cons(self, left, right):
-        '''Not fully implemented, obviously'''
         if self.is_tree(right):
             if(self.is_tree(left)):
                 items = list(left) + list(right)
@@ -66,3 +69,9 @@ class Interpreter:
                               self.cons(left.right, right))
         return SyntaxTree('(cons '+str(left)+' '+str(right)+")",
                           self.interpreter)
+
+    def def_lambda(self, args, expr):
+        for count, arg in enumerate(tree.split_expr(expr)):
+            expr = expr.replace(" "+arg+" ", "{a"+count+"}")
+        return expr
+    # not sure this is valid, becaues you cant really programatically define variables in python

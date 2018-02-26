@@ -1,9 +1,9 @@
 class SyntaxTree:
-    def __init__(self, expr, interpreter):
+    def __init__(self, expr, interpreter, left=None, right=None):
         self.raw_expr = expr
         self.interpreter = interpreter
-        self.naive_tree = False
-        self.make_tree()
+        if not self.left:
+            self.make_tree()
 
     def __call__(self):
         try:
@@ -18,21 +18,16 @@ class SyntaxTree:
         return self.eval()
 
     def make_tree(self):
-        self.first_sp = self.raw_expr.index(' ')
-        self.symbol = self.raw_expr[1:self.first_sp]
-        if(len(self.raw_expr.split(" ")) == 3):
-            self.naive_tree = True
-            self.left = self.raw_expr.split(" ")[1]
-            self.right = self.raw_expr.split(" ")[2]
-            return
-        self.second_sp = self.first_sp + self.group_parens(self.raw_expr[self.first_sp])+1
-        if self.second_sp-self.first_sp == 1:
-            # the second item is not a list
-            self.second_sp = self.raw_expr[self.first_sp+1:].index(' ')
-        self.left = SyntaxTree(self.raw_expr[self.first_sp+1:self.second_sp],
+        symlst = split_expr(self.raw_expr)
+        self.symbol = symlst[0]
+        self.left = SyntaxTree(symlst[1],
                                self.interpreter)
-        self.right = SyntaxTree(self.raw_expr[self.second_sp+1:-1],
-                                self.interpreter)
+        if len(symlst) == 3:
+            self.right = SyntaxTree(symlst[2],
+                                    self.interpreter)
+        self.naive_tree = True
+        if "(" in self.left or "(" in self.right:
+            self.naive_tree = False
 
     def group_parens(self, string):
         'returns the index of the parenthesis that corresponds to the first one in the string given'
@@ -56,3 +51,39 @@ class SyntaxTree:
             return self.interpreter.evalbase(self.symbol,
                                              self.left,
                                              self.right)
+        elif self.symbol in self.interpreter.defined.keys():
+            return self.interpreter.defined[self.symbol].format()
+
+    def __list__(self):
+        if self.symbol == 'cons':
+            if self.interpreter.is_tree(self.left):
+                if self.intrepeter.is_tree(self.right):
+                    return list(self.left) + list(self.right)
+                return list(self.left) + [self.right]
+            if self.interpreter.is_tree(self.right):
+                return [self.left] + list(self.right)
+            return [self.left, self.right]
+        return [self.raw_expr]
+
+
+def split_expr(string):
+    if string[0] == "(":
+        string = string[1:]
+    if string[-1] == ")":
+        string = string[:-1]
+    oparen = 0
+    clparen = 0
+    inds = [0]
+    for i in range(len(string)):
+        if string[i] == ' ' and oparen == clparen:
+            inds.append(i)
+            oparen = 0
+            clparen = 0
+        if string[i] == "(":
+            oparen += 1
+        if string[i] == ")":
+            clparen += 1
+    res = []
+    for i in range(1, len(inds)):
+        res.append(res[inds[i-1]:inds[i]])
+    return res
