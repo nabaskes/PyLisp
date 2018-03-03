@@ -4,7 +4,7 @@ from tree import SyntaxTree, split_expr
 class Interpreter:
     def __init__(self):
         self.builtin = ['+', '-', '/', '*']
-        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval']
+        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'map', 'filter', 'reduce']
         self.defined = {}
         self.fake_tree = SyntaxTree('(+ 1 2)', self)
 
@@ -47,9 +47,26 @@ class Interpreter:
         if symbol == 'lambda':
             return self.def_lambda(left, right)
         if symbol == 'eval':
-            return self.eval_lambda(self.left, self.right)
+            return self.eval_lambda(left, right)
         if symbol == 'define':
-            return self.define(self.left, self.right)
+            return self.define(left, right)
+        if symbol == 'map':
+            result = []
+            for item in split_expr(right):
+                result.append(self.eval_lamba(self.eval(split_expr(left)), result))
+            return "("+" ".join(result)+")"
+        if symbol == "filter":
+            result = []
+            for item in split_expr(right):
+                if self.eval_lamba(item, left):
+                    result.append(item)
+            return "("+" ".join(result)+")"
+        if symbol == "reduce":
+            args = split_expr(right)
+            res = args[0]
+            for i in range(1, len(args)):
+                res = self.eval_lambda("("+str(res)+" "+args[i]")", left)
+            return res
 
     def equals(self, left, right):
         if self.is_tree(left):
