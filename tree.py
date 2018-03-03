@@ -2,8 +2,10 @@ class SyntaxTree:
     def __init__(self, expr, interpreter, left=None, right=None):
         self.raw_expr = expr
         self.interpreter = interpreter
-        if not self.left:
+        if not left:
             self.make_tree()
+        else:
+            self.left = left
 
     def __call__(self):
         try:
@@ -20,13 +22,21 @@ class SyntaxTree:
     def make_tree(self):
         symlst = split_expr(self.raw_expr)
         self.symbol = symlst[0]
-        self.left = SyntaxTree(symlst[1],
-                               self.interpreter)
+        if len(split_expr(symlst[1])) > 1:
+            self.left = SyntaxTree(symlst[1],
+                                   self.interpreter)
+        else:
+            self.left = symlst[1]
         if len(symlst) == 3:
-            self.right = SyntaxTree(symlst[2],
-                                    self.interpreter)
+            if len(split_expr(symlst[2]))> 1:
+                self.right = SyntaxTree(symlst[2],
+                                        self.interpreter)
+            else:
+                self.right = symlst[2]
+        else:
+            self.right = ''
         self.naive_tree = True
-        if "(" in self.left or "(" in self.right:
+        if is_in("(",  self.left) or is_in("(", self.right):
             self.naive_tree = False
 
     def group_parens(self, string):
@@ -60,23 +70,33 @@ class SyntaxTree:
 
 
 def split_expr(string):
+    if "(" not in string:
+        return string
     if string[0] == "(":
         string = string[1:]
     if string[-1] == ")":
         string = string[:-1]
+    inds = [0]
     oparen = 0
     clparen = 0
-    inds = [0]
-    for i in range(len(string)):
-        if string[i] == ' ' and oparen == clparen:
-            inds.append(i)
-            oparen = 0
+    for count, char in enumerate(string):
+        if char == ' ' and oparen == clparen:
+            inds.append(count)
             clparen = 0
-        if string[i] == "(":
+            oparen = 0
+        elif char == "(":
             oparen += 1
-        if string[i] == ")":
+        elif char == ")":
             clparen += 1
     res = []
     for i in range(1, len(inds)):
-        res.append(res[inds[i-1]:inds[i]])
+        res.append(string[inds[i-1]:inds[i]].strip())
+    res.append(string[inds[-1]:].strip())
     return res
+
+
+def is_in(item, container):
+    'container is either a string, listlike, or SyntaxTree'
+    if isinstance(container, SyntaxTree):
+        return item in container.raw_expr
+    return item in container

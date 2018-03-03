@@ -1,4 +1,4 @@
-from tree import SyntaxTree, split_expr
+from tree import SyntaxTree, split_expr, is_in
 
 
 class Interpreter:
@@ -15,13 +15,13 @@ class Interpreter:
 
     def evalbuiltin(self, symbol, left, right):
         if symbol == '+':
-            return left + right
+            return float(left) + float(right)
         elif symbol == '-':
-            return left - right
+            return float(left) - float(right)
         elif symbol == '/':
-            return left/right
+            return float(left)/float(right)
         elif symbol == '*':
-            return left*right
+            return float(left)*float(right)
 
     def eval(self, symbol, left, right):
         if symbol in self.builtin:
@@ -62,10 +62,11 @@ class Interpreter:
                     result.append(item)
             return "("+" ".join(result)+")"
         if symbol == "reduce":
+            # in this version "reduce" is a foldl
             args = split_expr(right)
             res = args[0]
             for i in range(1, len(args)):
-                res = self.eval_lambda("("+str(res)+" "+args[i]")", left)
+                res = self.eval_lambda("("+str(res)+" "+args[i]+")", left)
             return res
 
     def equals(self, left, right):
