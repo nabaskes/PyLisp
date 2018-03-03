@@ -1,5 +1,6 @@
 from tree import SyntaxTree, split_expr
 
+
 class Interpreter:
     def __init__(self):
         self.builtin = ['+', '-', '/', '*']
@@ -49,7 +50,8 @@ class Interpreter:
 
     def is_tree(self, item):
         'tests whether an item is a tree'
-        return type(item) == type(self.fake_tree)
+        return isinstance(item, SyntaxTree)
+        # return type(item) == type(self.fake_tree)
 
     def cons(self, left, right):
         if self.is_tree(right):
@@ -71,7 +73,14 @@ class Interpreter:
                           self.interpreter)
 
     def def_lambda(self, args, expr):
-        for count, arg in enumerate(tree.split_expr(expr)):
-            expr = expr.replace(" "+arg+" ", "{a"+count+"}")
+        for arg in args:
+            expr = expr.replace(f" {arg} ", " \{"+str(arg)+"\}")
         return expr
+
+        # for count, arg in enumerate(tree.split_expr(expr)):
+        #     expr = expr.replace(" "+arg+" ", "{a"+count+"}")
+        # return expr
     # not sure this is valid, becaues you cant really programatically define variables in python
+
+    def eval_lambda(self, lam_expr, args):
+        pass
