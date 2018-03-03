@@ -43,16 +43,9 @@ class SyntaxTree:
         raise(ValueError("Open Paren doesn't have a corresponding close paren"))
 
     def eval(self):
-        if self.symbol in self.interpreter.builtin:
-            return self.interpreter.evalbuiltin(self.symbol,
-                                                self.left,
-                                                self.right)
-        elif self.symbol in self.interpreter.base_functions:
-            return self.interpreter.evalbase(self.symbol,
-                                             self.left,
-                                             self.right)
-        elif self.symbol in self.interpreter.defined.keys():
-            return self.interpreter.defined[self.symbol].format()
+        return self.interpreter.eval(self.symbol,
+                                     self.left,
+                                     self.right)
 
     def __list__(self):
         if self.symbol == 'cons':

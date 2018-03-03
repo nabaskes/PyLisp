@@ -4,7 +4,7 @@ from tree import SyntaxTree, split_expr
 class Interpreter:
     def __init__(self):
         self.builtin = ['+', '-', '/', '*']
-        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond']
+        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval']
         self.defined = {}
         self.fake_tree = SyntaxTree('(+ 1 2)', self)
 
@@ -23,6 +23,14 @@ class Interpreter:
         elif symbol == '*':
             return left*right
 
+    def eval(self, symbol, left, right):
+        if symbol in self.builtin:
+            return self.evalbuiltin(symbol, left, right)
+        elif symbol in self.base_functions:
+            return self.evalbase(symbol, left, right)
+        elif symbol in self.defined.keys():
+            return self.eval_lambda(self.defined[symbol], self.left)
+
     def evalbase(self, symbol, left, right):
         if symbol == 'eq?':
             return self.equals(left, right)
@@ -38,6 +46,10 @@ class Interpreter:
             return len(split_expr(left)) == 1
         if symbol == 'lambda':
             return self.def_lambda(left, right)
+        if symbol == 'eval':
+            return self.eval_lambda(self.left, self.right)
+        if symbol == 'define':
+            return self.define(self.left, self.right)
 
     def equals(self, left, right):
         if self.is_tree(left):
@@ -73,9 +85,9 @@ class Interpreter:
                           self.interpreter)
 
     def def_lambda(self, args, expr):
-        for arg in args:
+        for arg in split_expr(args):
             expr = expr.replace(f" {arg} ", " \{"+str(arg)+"\}")
-        return expr
+        return "("+expr+" "+args+")"
 
         # for count, arg in enumerate(tree.split_expr(expr)):
         #     expr = expr.replace(" "+arg+" ", "{a"+count+"}")
@@ -83,4 +95,19 @@ class Interpreter:
     # not sure this is valid, becaues you cant really programatically define variables in python
 
     def eval_lambda(self, lam_expr, args):
-        pass
+        lam_data = split_expr(lam_expr)
+        expr = lam_data[0]
+        largs = split_expr(lam_data[1])
+        evaluation_args = {}
+        for count, arg in enumerate(largs):
+            evaluation_args[arg] = args[count]
+        return self.eval(expr.format(**evaluation_args))
+
+    def define(self, name, func):
+        'Define syntax for this dialect is a bit bad.'
+        '(define ((args) (actions)))'
+        func_def = split_expr(func)
+        args = func_def[0]
+        expr = func_def[1]
+        self.defined[name] = "(lambda "+self.def_lambda(args, expr)[1:]
+        return
