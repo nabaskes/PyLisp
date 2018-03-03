@@ -108,7 +108,7 @@ class Interpreter:
                               self,
                               self.cons(left.right, right))
         return SyntaxTree('(cons '+str(left)+' '+str(right)+")",
-                          self.interpreter)
+                          self)
 
     def def_lambda(self, args, expr):
         for arg in split_expr(args):

@@ -8,6 +8,8 @@ class SyntaxTree:
             self.left = left
 
     def __call__(self):
+        if self.symbol == "quote":
+            return self.eval()
         try:
             self.left = self.left()
         except Exception:

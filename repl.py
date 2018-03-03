@@ -5,4 +5,8 @@ kno = Interpreter()
 while True:
     expr = input("PyLisp >>")
     s = SyntaxTree(expr, kno)
-    print(s())
+    stdout = s()
+    if isinstance(stdout, SyntaxTree):
+        print(stdout.raw_expr)
+    else:
+        print(stdout)
