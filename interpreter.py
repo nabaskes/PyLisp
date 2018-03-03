@@ -35,6 +35,8 @@ class Interpreter:
         if symbol == 'eq?':
             return self.equals(left, right)
         if symbol == 'quote':
+            if isinstance(left, SyntaxTree):
+                return left.raw_expr
             return left
         if symbol == 'car':
             return left.left
@@ -71,11 +73,17 @@ class Interpreter:
 
     def equals(self, left, right):
         if self.is_tree(left):
-            if self.is_tree(right):
-                return self.equals(left.left, right.left) and self.equals(left.right, right.right)
-            return False
+            left = left()
         if self.is_tree(right):
-            return False
+            right = right()
+        try:
+            left = float(left)
+        except Exception:
+            pass
+        try:
+            right = float(right)
+        except Exception:
+            pass
         return left == right
 
     def is_tree(self, item):
