@@ -111,9 +111,12 @@ class Interpreter:
                           self)
 
     def def_lambda(self, args, expr):
-        for arg in split_expr(args):
-            expr = expr.replace(f" {arg} ", " \{"+str(arg)+"\}")
-        return "("+expr+" "+args+")"
+        args = split_expr(args)
+        if not isinstance(args, list):
+            args = [args]
+        for arg in args:
+            expr = expr.raw_expr.replace(f" {arg} ", " {"+str(arg)+"} ")
+        return "("+expr+" "+lisp_list(args)+")"
 
         # for count, arg in enumerate(tree.split_expr(expr)):
         #     expr = expr.replace(" "+arg+" ", "{a"+count+"}")
@@ -121,13 +124,16 @@ class Interpreter:
     # not sure this is valid, becaues you cant really programatically define variables in python
 
     def eval_lambda(self, lam_expr, args):
+        if isinstance(lam_expr, SyntaxTree):
+            lam_expr = lam_expr.raw_expr
         lam_data = split_expr(lam_expr)
         expr = lam_data[0]
         largs = split_expr(lam_data[1])
         evaluation_args = {}
         for count, arg in enumerate(largs):
             evaluation_args[arg] = args[count]
-        return self.eval(expr.format(**evaluation_args))
+        return SyntaxTree(expr.format(**evaluation_args),
+                          self)()
 
     def define(self, name, func):
         'Define syntax for this dialect is a bit bad.'
@@ -137,3 +143,7 @@ class Interpreter:
         expr = func_def[1]
         self.defined[name] = "(lambda "+self.def_lambda(args, expr)[1:]
         return
+
+
+def lisp_list(data):
+    return "("+' '.join(data)+")"
