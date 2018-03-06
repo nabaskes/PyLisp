@@ -1,12 +1,17 @@
 from interpreter import Interpreter
 from tree import SyntaxTree
+import sys, traceback
 
 kno = Interpreter()
 while True:
     expr = input("PyLisp >>")
     s = SyntaxTree(expr, kno)
-    stdout = s()
-    if isinstance(stdout, SyntaxTree):
-        print(stdout.raw_expr)
-    else:
-        print(stdout)
+    try:
+        stdout = s()
+    except Exception:
+        print("PyLisp error, printing stack trace:")
+        print("-"*60)
+        traceback.print_exc(file=sys.stdout)
+        print("-"*60)
+        continue
+    print(stdout)

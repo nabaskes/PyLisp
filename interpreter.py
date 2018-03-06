@@ -49,6 +49,7 @@ class Interpreter:
         if symbol == 'lambda':
             return self.def_lambda(left, right)
         if symbol == 'eval':
+            print(left)
             return self.eval_lambda(left, right)
         if symbol == 'define':
             return self.define(left, right)
@@ -112,6 +113,8 @@ class Interpreter:
 
     def def_lambda(self, args, expr):
         args = split_expr(args)
+        print("def lambda args:")
+        print(args)
         if not isinstance(args, list):
             args = [args]
         for arg in args:
@@ -124,6 +127,10 @@ class Interpreter:
     # not sure this is valid, becaues you cant really programatically define variables in python
 
     def eval_lambda(self, lam_expr, args):
+        print("Eval lambda args:")
+        print(args)
+        print("Eval lambda expr:")
+        print(lam_expr)
         if isinstance(lam_expr, SyntaxTree):
             lam_expr = lam_expr.raw_expr
         lam_data = split_expr(lam_expr)

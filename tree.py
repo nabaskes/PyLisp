@@ -10,16 +10,24 @@ class SyntaxTree:
     def __call__(self):
         if self.symbol == "quote":
             return self.eval()
+        if self.symbol == "lambda":
+            return self.eval()
         try:
             self.left = self.left()
-        except Exception:
+        except TypeError as e:
+            if "not callable" not in str(e):
+                raise
             # left is not a SyntaxTree
-            pass
+            # pass
         try:
             self.right = self.right()
-        except Exception:
-            pass
+        except TypeError as e:
+            if "not callable" not in str(e):
+                raise
         return self.eval()
+
+    def __str__(self):
+        return self.raw_expr
 
     def make_tree(self):
         symlst = split_expr(self.raw_expr)
