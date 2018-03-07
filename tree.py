@@ -8,17 +8,16 @@ class SyntaxTree:
             self.left = left
 
     def __call__(self):
-        if self.symbol == "quote":
-            return self.eval()
-        if self.symbol == "lambda":
+        if self.symbol in ["lambda", "quote", "define"]:
             return self.eval()
         try:
             self.left = self.left()
         except TypeError as e:
+            # raise for any error other than duck type
             if "not callable" not in str(e):
                 raise
-            # left is not a SyntaxTree
-            # pass
+        if self.symbol == "eval":
+            return self.eval()
         try:
             self.right = self.right()
         except TypeError as e:
@@ -80,6 +79,8 @@ class SyntaxTree:
 
 
 def split_expr(string):
+    if isinstance(string, SyntaxTree):
+        string = string.raw_expr
     if "(" not in string:
         return string
     if string[0] == "(":

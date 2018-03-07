@@ -1,6 +1,7 @@
 from interpreter import Interpreter
 from tree import SyntaxTree
-import sys, traceback
+import sys
+import traceback
 
 kno = Interpreter()
 while True:

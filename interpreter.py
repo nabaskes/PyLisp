@@ -6,7 +6,6 @@ class Interpreter:
         self.builtin = ['+', '-', '/', '*']
         self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'map', 'filter', 'reduce']
         self.defined = {}
-        self.fake_tree = SyntaxTree('(+ 1 2)', self)
 
     def __call__(self, expr):
         'Evaluates a lisp expression'
@@ -29,7 +28,22 @@ class Interpreter:
         elif symbol in self.base_functions:
             return self.evalbase(symbol, left, right)
         elif symbol in self.defined.keys():
-            return self.eval_lambda(self.defined[symbol], self.left)
+            print("running defined")
+            try:
+                left = left()
+            except Exception as e:
+                if "not callable" not in str(e):
+                    raise
+            if right:
+                try:
+                    right = right()
+                except Exception as e:
+                    if "not callable" not in str(e):
+                        raise
+                left = "("+str(left)+" "+str(right)+")"
+            print(self.defined[symbol])
+            print(left)
+            return self.eval_lambda(self.defined[symbol], left)
 
     def evalbase(self, symbol, left, right):
         if symbol == 'eq?':
@@ -49,14 +63,14 @@ class Interpreter:
         if symbol == 'lambda':
             return self.def_lambda(left, right)
         if symbol == 'eval':
-            print(left)
             return self.eval_lambda(left, right)
         if symbol == 'define':
             return self.define(left, right)
         if symbol == 'map':
             result = []
             for item in split_expr(right):
-                result.append(self.eval_lamba(self.eval(split_expr(left)), result))
+                result.append(self.eval_lamba(self.eval(split_expr(left)),
+                                              result))
             return "("+" ".join(result)+")"
         if symbol == "filter":
             result = []
@@ -112,27 +126,24 @@ class Interpreter:
                           self)
 
     def def_lambda(self, args, expr):
+        if isinstance(args, SyntaxTree):
+            args = args.raw_expr
+        if isinstance(expr, SyntaxTree):
+            expr = expr.raw_expr
         args = split_expr(args)
-        print("def lambda args:")
-        print(args)
         if not isinstance(args, list):
             args = [args]
         for arg in args:
-            expr = expr.raw_expr.replace(f" {arg} ", " {"+str(arg)+"} ")
+            # there are three cases for formatting of arguments
+            expr = expr.replace(f" {arg} ", " {"+str(arg)+"} ")
+            expr = expr.replace(f"({arg} ", "({"+str(arg)+"} ")
+            expr = expr.replace(f" {arg})", " {"+str(arg)+"})")
         return "("+expr+" "+lisp_list(args)+")"
 
-        # for count, arg in enumerate(tree.split_expr(expr)):
-        #     expr = expr.replace(" "+arg+" ", "{a"+count+"}")
-        # return expr
-    # not sure this is valid, becaues you cant really programatically define variables in python
-
     def eval_lambda(self, lam_expr, args):
-        print("Eval lambda args:")
-        print(args)
-        print("Eval lambda expr:")
-        print(lam_expr)
         if isinstance(lam_expr, SyntaxTree):
             lam_expr = lam_expr.raw_expr
+        args = split_expr(args)
         lam_data = split_expr(lam_expr)
         expr = lam_data[0]
         largs = split_expr(lam_data[1])
@@ -148,8 +159,8 @@ class Interpreter:
         func_def = split_expr(func)
         args = func_def[0]
         expr = func_def[1]
-        self.defined[name] = "(lambda "+self.def_lambda(args, expr)[1:]
-        return
+        self.defined[str(name)] = self.def_lambda(args, expr)
+        return self.defined
 
 
 def lisp_list(data):
