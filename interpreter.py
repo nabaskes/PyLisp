@@ -3,8 +3,8 @@ from tree import SyntaxTree, split_expr, is_in
 
 class Interpreter:
     def __init__(self):
-        self.builtin = ['+', '-', '/', '*']
-        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'map', 'filter', 'reduce']
+        self.builtin = ['+', '-', '/', '*', '>', 'and', 'or', 'not']
+        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'bool', 'map', 'filter', 'reduce']
         self.defined = {}
 
     def __call__(self, expr):
@@ -21,6 +21,14 @@ class Interpreter:
             return float(left)/float(right)
         elif symbol == '*':
             return float(left)*float(right)
+        elif symbol == '>':
+            return float(left)>float(right)
+        elif symbol == 'and':
+            return left and right
+        elif symbol == 'or':
+            return left or right
+        elif symbol == 'not':
+            return not left
 
     def eval(self, symbol, left, right):
         if symbol in self.builtin:
@@ -44,6 +52,7 @@ class Interpreter:
             print(self.defined[symbol])
             print(left)
             return self.eval_lambda(self.defined[symbol], left)
+        return symbol
 
     def evalbase(self, symbol, left, right):
         if symbol == 'eq?':
@@ -66,25 +75,18 @@ class Interpreter:
             return self.eval_lambda(left, right)
         if symbol == 'define':
             return self.define(left, right)
-        if symbol == 'map':
-            result = []
-            for item in split_expr(right):
-                result.append(self.eval_lamba(self.eval(split_expr(left)),
-                                              result))
-            return "("+" ".join(result)+")"
-        if symbol == "filter":
-            result = []
-            for item in split_expr(right):
-                if self.eval_lamba(item, left):
-                    result.append(item)
-            return "("+" ".join(result)+")"
-        if symbol == "reduce":
-            # in this version "reduce" is a foldl
-            args = split_expr(right)
-            res = args[0]
-            for i in range(1, len(args)):
-                res = self.eval_lambda("("+str(res)+" "+args[i]+")", left)
-            return res
+        if symbol == 'cond':
+            print(split_expr(right))
+            print(left)
+            if left:
+                return SyntaxTree(split_expr(right)[0], self)()
+            return SyntaxTree(split_expr(right)[1], self)()
+        if symbol == 'bool':
+            if left in ['True', 'true', 't', 'tr', '1', 'T']:
+                return True
+            return False
+        if symbol == 'import':
+            self.handle_import(left)
 
     def equals(self, left, right):
         if self.is_tree(left):
@@ -161,6 +163,13 @@ class Interpreter:
         expr = func_def[1]
         self.defined[str(name)] = self.def_lambda(args, expr)
         return self.defined
+
+    def handle_import(self, filename):
+        ' this is mostly used to define a lot of statements'
+        f = open(filename, 'r')
+        exprs = f.read()
+        for expr in exprs:
+            SyntaxTree(expr.replace('\n', ''), self)()
 
 
 def lisp_list(data):

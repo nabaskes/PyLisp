@@ -8,7 +8,7 @@ class SyntaxTree:
             self.left = left
 
     def __call__(self):
-        if self.symbol in ["lambda", "quote", "define"]:
+        if self.symbol in ["lambda", "quote", "define", "import"]:
             return self.eval()
         try:
             self.left = self.left()
@@ -16,7 +16,7 @@ class SyntaxTree:
             # raise for any error other than duck type
             if "not callable" not in str(e):
                 raise
-        if self.symbol == "eval":
+        if self.symbol in ['eval', 'cond', 'bool']:
             return self.eval()
         try:
             self.right = self.right()

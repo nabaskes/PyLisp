@@ -1,0 +1,9 @@
+(define map ((f l) (cond (atom? l) ((eval f l) (cons (eval f (car l)) (map f (cdr l)))))))
+
+(define reduce ((f l) (cond (atom ?) ((quote l) (eval f ((car l) (reduce f (cdr l)))))))
+
+(define foldl ((f l) (reduce f l)))
+
+(define filter ((k l) (cond (k l) ((cons (car l) (filter k (cdr l))) (filter k (cdr l))))))
+
+(define qsort ((k l)  (cons (filter k l) (filter (not k) l))))
