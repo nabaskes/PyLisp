@@ -1,13 +1,19 @@
 class SyntaxTree:
     def __init__(self, expr, interpreter, left=None, right=None):
+        self.atom = False
         self.raw_expr = expr
         self.interpreter = interpreter
+        if len(split_expr(expr)) == 1:
+            self.atom = True
+            return
         if not left:
             self.make_tree()
         else:
             self.left = left
 
     def __call__(self):
+        if self.atom:
+            return self.raw_expr
         if self.symbol in ["lambda", "quote", "define", "import"]:
             return self.eval()
         try:

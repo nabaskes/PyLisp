@@ -4,7 +4,7 @@ from tree import SyntaxTree, split_expr, is_in
 class Interpreter:
     def __init__(self):
         self.builtin = ['+', '-', '/', '*', '>', 'and', 'or', 'not']
-        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'bool', 'map', 'filter', 'reduce']
+        self.base_functions = ['eq?', 'quote', 'cons', 'car', 'cdr', 'atom?', 'define', 'lambda', 'cond', 'eval', 'bool', 'import']
         self.defined = {}
 
     def __call__(self, expr):
@@ -36,7 +36,6 @@ class Interpreter:
         elif symbol in self.base_functions:
             return self.evalbase(symbol, left, right)
         elif symbol in self.defined.keys():
-            print("running defined")
             try:
                 left = left()
             except Exception as e:
@@ -49,8 +48,6 @@ class Interpreter:
                     if "not callable" not in str(e):
                         raise
                 left = "("+str(left)+" "+str(right)+")"
-            print(self.defined[symbol])
-            print(left)
             return self.eval_lambda(self.defined[symbol], left)
         return symbol
 
@@ -76,8 +73,6 @@ class Interpreter:
         if symbol == 'define':
             return self.define(left, right)
         if symbol == 'cond':
-            print(split_expr(right))
-            print(left)
             if left:
                 return SyntaxTree(split_expr(right)[0], self)()
             return SyntaxTree(split_expr(right)[1], self)()
@@ -166,6 +161,8 @@ class Interpreter:
 
     def handle_import(self, filename):
         ' this is mostly used to define a lot of statements'
+        if isinstance(filename, SyntaxTree):
+            filename = filename.raw_expr
         f = open(filename, 'r')
         exprs = f.read()
         for expr in exprs:
