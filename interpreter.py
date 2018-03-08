@@ -166,7 +166,7 @@ class Interpreter:
         f = open(filename, 'r')
         exprs = f.read()
         for expr in exprs:
-            SyntaxTree(expr.replace('\n', ''), self)()
+            SyntaxTree(expr.replace('\n', '').replace("\t", ""), self)()
 
 
 def lisp_list(data):
