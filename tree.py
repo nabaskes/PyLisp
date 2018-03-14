@@ -88,7 +88,7 @@ def split_expr(string):
     if isinstance(string, SyntaxTree):
         string = string.raw_expr
     if "(" not in string:
-        return string
+        return [string]
     if string[0] == "(":
         string = string[1:]
     if string[-1] == ")":
